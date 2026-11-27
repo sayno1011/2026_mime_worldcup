@@ -1,4 +1,4 @@
-import { type RefObject, useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 type YouTubePlayer = {
   loadVideoById: (videoId: string, startSeconds: number) => void;
@@ -38,19 +38,29 @@ type YouTubeCardProps = {
   videoId: string;
   active: boolean;
   apiStatus: YouTubeApiStatus;
-  soundEnabled: RefObject<boolean>;
+  soundEnabled: boolean;
+  onSoundChange: (enabled: boolean) => void;
 };
 
-export function YouTubeCard({ title, videoId, active, apiStatus, soundEnabled }: YouTubeCardProps) {
+export function YouTubeCard({ title, videoId, active, apiStatus, soundEnabled, onSoundChange }: YouTubeCardProps) {
   const mediaRef = useRef<HTMLDivElement>(null);
   const playerHostRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef(false);
   const playbackAttempt = useRef<"audible" | "muted" | null>(null);
   const [player, setPlayer] = useState<YouTubePlayer | null>(null);
   const [failed, setFailed] = useState(false);
-  const [muted, setMuted] = useState(true);
+  const [soundBlocked, setSoundBlocked] = useState(false);
   const [needsPlay, setNeedsPlay] = useState(false);
   const unavailable = failed || apiStatus === "unavailable";
+
+  const startPlayback = useEffectEvent((readyPlayer: YouTubePlayer) => {
+    playbackAttempt.current = soundEnabled ? "audible" : "muted";
+    if (soundEnabled) readyPlayer.unMute();
+    else readyPlayer.mute();
+    setSoundBlocked(false);
+    setNeedsPlay(false);
+    readyPlayer.loadVideoById(videoId, 0);
+  });
 
   useEffect(() => {
     const api = window.YT;
@@ -87,7 +97,7 @@ export function YouTubeCard({ title, videoId, active, apiStatus, soundEnabled }:
           if (playbackAttempt.current === "audible") {
             playbackAttempt.current = "muted";
             target.mute();
-            setMuted(true);
+            setSoundBlocked(true);
             target.playVideo();
           } else {
             playbackAttempt.current = null;
@@ -129,13 +139,7 @@ export function YouTubeCard({ title, videoId, active, apiStatus, soundEnabled }:
       if (!activeRef.current || entry.intersectionRatio < 0.51) return;
 
       observer.disconnect();
-      const withSound = soundEnabled.current;
-      playbackAttempt.current = withSound ? "audible" : "muted";
-      if (withSound) player.unMute();
-      else player.mute();
-      setMuted(!withSound);
-      setNeedsPlay(false);
-      player.loadVideoById(videoId, 0);
+      startPlayback(player);
     }, { threshold: 0.51 });
     observer.observe(media);
 
@@ -145,24 +149,33 @@ export function YouTubeCard({ title, videoId, active, apiStatus, soundEnabled }:
       playbackAttempt.current = null;
       if (media.isConnected) player.pauseVideo();
     };
-  }, [active, player, soundEnabled, unavailable, videoId]);
+  }, [active, player, unavailable, videoId]);
 
   function toggleSound() {
     if (!player) return;
 
-    const withSound = muted;
-    soundEnabled.current = withSound;
-    if (playbackAttempt.current) {
-      playbackAttempt.current = withSound ? "audible" : "muted";
+    const enabled = !soundEnabled;
+    onSoundChange(enabled);
+    setSoundBlocked(false);
+    if (enabled) {
+      playbackAttempt.current = "audible";
+      player.unMute();
+      if (needsPlay) {
+        setNeedsPlay(false);
+        player.playVideo();
+      }
+    } else {
+      if (playbackAttempt.current) playbackAttempt.current = "muted";
+      player.mute();
     }
-    if (withSound) player.unMute();
-    else player.mute();
-    setMuted(!withSound);
   }
 
   function play() {
     if (!player) return;
-    playbackAttempt.current = muted ? "muted" : "audible";
+    playbackAttempt.current = soundEnabled ? "audible" : "muted";
+    if (soundEnabled) player.unMute();
+    else player.mute();
+    setSoundBlocked(false);
     setNeedsPlay(false);
     player.playVideo();
   }
@@ -184,9 +197,13 @@ export function YouTubeCard({ title, videoId, active, apiStatus, soundEnabled }:
         ) : (
           <div className="video-actions">
             <button type="button" onClick={toggleSound} disabled={!player}>
-              {muted ? "소리 켜기" : "소리 끄기"}
+              {soundEnabled ? "소리 끄기" : "소리 켜기"}
             </button>
-            {needsPlay && <button type="button" onClick={play}>재생</button>}
+            {(needsPlay || (soundEnabled && soundBlocked)) && (
+              <button type="button" onClick={play}>
+                {soundEnabled ? "소리 내서 재생" : "재생"}
+              </button>
+            )}
           </div>
         )}
       </div>
