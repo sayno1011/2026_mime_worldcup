@@ -1,5 +1,10 @@
 # 2026 밈 월드컵
 
+## 기획 및 시안
+
+- [올해의 밈 투표와 밈 테스트 기획](docs/design/vote-and-test-plan.md)
+- [SNS 공유 카드 시안](docs/design/meme-worldcup-share-card-ideas-v1.html)
+
 ## 쇼츠 플레이어 규칙
 
 - 각 밈에 사진 또는 쇼츠 영상 한 개를 연결하고, 갤러리에 지정된 순서대로 보여준다.
