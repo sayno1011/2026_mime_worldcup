@@ -7,12 +7,21 @@ import { memes } from "./memes";
 import { type YouTubeApiStatus, YouTubeCard } from "./youtube-card";
 
 const hasVideos = memes.some(({ kind }) => kind === "youtube");
+const soundStorageKey = "meme-gallery-sound";
 
 export function MemeGallery() {
   const trackRef = useRef<HTMLUListElement>(null);
-  const soundEnabled = useRef(false);
+  const [soundEnabled, setSoundEnabled] = useState(false);
   const [active, setActive] = useState(0);
   const [apiStatus, setApiStatus] = useState<YouTubeApiStatus>("loading");
+
+  useEffect(() => {
+    try {
+      setSoundEnabled(window.sessionStorage.getItem(soundStorageKey) === "enabled");
+    } catch {
+      // The setting still works while the page is open if storage is unavailable.
+    }
+  }, []);
 
   useEffect(() => {
     if (!hasVideos || apiStatus !== "loading") return;
@@ -25,6 +34,15 @@ export function MemeGallery() {
       setApiStatus("ready");
     } else {
       window.onYouTubeIframeAPIReady = () => setApiStatus("ready");
+    }
+  }
+
+  function updateSoundPreference(enabled: boolean) {
+    setSoundEnabled(enabled);
+    try {
+      window.sessionStorage.setItem(soundStorageKey, enabled ? "enabled" : "muted");
+    } catch {
+      // Keep using the in-memory setting.
     }
   }
 
@@ -124,6 +142,7 @@ export function MemeGallery() {
                   active={active === index}
                   apiStatus={apiStatus}
                   soundEnabled={soundEnabled}
+                  onSoundChange={updateSoundPreference}
                 />
               ) : (
                 <>

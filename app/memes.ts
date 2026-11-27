@@ -10,18 +10,7 @@ export const memes: Meme[] = [
   { id: "SLQa4j8G8cM", kind: "youtube", title: "샤갈/쌰갈" },
 
   // 2월
-  {
-    id: "bomdong-bibimbap",
-    kind: "image",
-    title: "강호동 봄동비빔밥",
-    src: "/memes/bomdong-bibimbap.png",
-    alt: "두쫀쿠 말고 봄동겉절이 먹자라는 문구와 1박 2일에서 봄동을 무치는 장면",
-  },
   { id: "rKdsj4PAd-A", kind: "youtube", title: "간바레 챌린지" },
-
-  // 3월
-  { id: "ttc3K3AqD9A", kind: "youtube", title: "상하이 버터떡" },
-  { id: "5xdlH-J2Pi8", kind: "youtube", title: "창억떡 호박인절미 / 떡픈런" },
 
   // 4월
   { id: "1PjvCI5Z5zg", kind: "youtube", title: "셋로그" },
@@ -30,7 +19,6 @@ export const memes: Meme[] = [
   { id: "bmXVsFfHNHk", kind: "youtube", title: "거제 야호! / ○○ 야호!" },
   { id: "5SDI1ZSxlQ8", kind: "youtube", title: "영크크 vs 늙크크 / 올크크" },
   { id: "n-4_k88b0gw", kind: "youtube", title: "모시모시, 키코에테루?" },
-  { id: "j9QcCkZ8dlg", kind: "youtube", title: "우베 / 보라색 디저트" },
 
   // 6월
   { id: "M7Wm8hJnHnQ", kind: "youtube", title: "모르겠고, 난 파라파라나 춰야겠다" },
@@ -38,12 +26,6 @@ export const memes: Meme[] = [
 
   // 7월
   { id: "bAC1ppSrP0M", kind: "youtube", title: "왁뿌볼 / 왁뿌" },
-
-  // 8월
-  { id: "R6L93MQz66E", kind: "youtube", title: "피자설기" },
-
-  // 9월
-  { id: "y0YV9j6GQpc", kind: "youtube", title: "한정선 과일찹쌀떡" },
 
   // 10월
   {
@@ -62,4 +44,7 @@ export const memes: Meme[] = [
   // 11월
   { id: "ZTABKsZoBkM", kind: "youtube", title: "라우럴" },
   { id: "NmIY5K_mvtY", kind: "youtube", title: "남대문 스카프 아저씨 / 돈 쓰지 마" },
+
+  { id: "5Osa5hEwDeY", kind: "youtube", title: "카와이 다케쟈 다메데스카" },
+  { id: "v7zOhqO34Gs", kind: "youtube", title: "단어 리듬게임" },
 ];
