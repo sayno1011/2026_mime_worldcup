@@ -1,67 +1,54 @@
 "use client";
 
 import Image from "next/image";
+import Script from "next/script";
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
+import { type YouTubeApiStatus, YouTubeCard } from "./youtube-card";
 
-type Meme = {
-  title: string;
-  description: string;
-  media:
-    | { kind: "image"; src: string; alt: string }
-    | { kind: "video"; src: string; poster?: string; captions?: string };
-};
+type Meme = { id: string; title: string } & (
+  | { kind: "image"; src: string; alt: string; description?: string }
+  | { kind: "youtube"; videoId: string }
+);
 
 const memes: Meme[] = [
   {
+    id: "why-teacher",
+    kind: "youtube",
+    title: "윤정아 윤정아 / 왜요쌤 왜요쌤",
+    videoId: "ZSCwu-raidg",
+  },
+  {
+    id: "side-eye-cat",
+    kind: "image",
     title: "지금 그걸 말이라고",
     description: "표정으로 이미 다 말했을 때",
-    media: {
-      kind: "image",
-      src: "/memes/cat.jpg",
-      alt: "책상에서 옆눈으로 흘겨보는 고양이",
-    },
+    src: "/memes/cat.jpg",
+    alt: "책상에서 옆눈으로 흘겨보는 고양이",
   },
-  {
-    title: "일단 나부터 신남",
-    description: "아직 시작도 안 했는데",
-    media: {
-      kind: "image",
-      src: "/memes/dog.jpg",
-      alt: "노란 선글라스를 낀 흰 강아지",
-    },
-  },
-  {
-    title: "나만 상황 파악 중",
-    description: "다들 이해한 것 같아서 조용히 있을 때",
-    media: {
-      kind: "image",
-      src: "/memes/duck.jpg",
-      alt: "작은 모자를 쓰고 고개를 갸웃하는 오리",
-    },
-  },
-  {
-    title: "아니 그게 된다고?",
-    description: "생각보다 일이 잘 풀렸을 때",
-    media: {
-      kind: "image",
-      src: "/memes/red-panda.jpg",
-      alt: "놀란 표정으로 두 앞발을 든 레서판다",
-    },
-  },
+  { id: "bomdong-bibimbap", kind: "youtube", title: "봄동 비빔밥", videoId: "ouScrWHUpoE" },
+  { id: "ganbare", kind: "youtube", title: "간바레 챌린지", videoId: "rKdsj4PAd-A" },
 ];
+const hasVideos = memes.some(({ kind }) => kind === "youtube");
 
 export function MemeGallery() {
   const trackRef = useRef<HTMLUListElement>(null);
+  const soundEnabled = useRef(false);
   const [active, setActive] = useState(0);
+  const [apiStatus, setApiStatus] = useState<YouTubeApiStatus>("loading");
 
   useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
+    if (!hasVideos || apiStatus !== "loading") return;
+    const timeout = window.setTimeout(() => setApiStatus("unavailable"), 15_000);
+    return () => window.clearTimeout(timeout);
+  }, [apiStatus]);
 
-    Array.from(track.children).forEach((card, index) => {
-      if (index !== active) card.querySelector("video")?.pause();
-    });
-  }, [active]);
+  function initializeYouTube() {
+    if (window.YT?.Player) {
+      setApiStatus("ready");
+    } else {
+      window.onYouTubeIframeAPIReady = () => setApiStatus("ready");
+    }
+  }
 
   function showCard(index: number) {
     const track = trackRef.current;
@@ -69,7 +56,7 @@ export function MemeGallery() {
     if (!track || !card) return;
 
     const offset = card.getBoundingClientRect().left - track.getBoundingClientRect().left;
-    track.scrollTo({ left: track.scrollLeft + offset });
+    track.scrollTo({ left: track.scrollLeft + offset + track.clientLeft });
   }
 
   function syncActive() {
@@ -90,6 +77,13 @@ export function MemeGallery() {
 
   return (
     <section className="gallery" aria-labelledby="shelf-label">
+      {hasVideos && (
+        <Script
+          src="https://www.youtube.com/iframe_api"
+          onReady={initializeYouTube}
+          onError={() => setApiStatus("unavailable")}
+        />
+      )}
       <div className="shelf-top">
         <h2 id="shelf-label">올해의 밈 모아보기</h2>
         <p className="gallery-position" aria-live="polite" aria-atomic="true">
@@ -102,8 +96,7 @@ export function MemeGallery() {
         <svg viewBox="0 0 24 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M2 8h20M6 4 2 8l4 4m12-8 4 4-4 4" />
         </svg>
-        <span className="guide-swipe">옆으로 밀어서 밈 넘기기</span>
-        <span className="guide-arrows">화살표로 밈 넘기기</span>
+        <span>화살표로 밈 넘기기</span>
       </p>
 
       <div className="gallery-stage">
@@ -128,37 +121,34 @@ export function MemeGallery() {
           onScroll={syncActive}
           onKeyDown={handleKeyDown}
         >
-          {memes.map(({ title, description, media }, index) => (
-            <li className="meme" key={media.src} inert={active !== index}>
-              <div className="meme-media">
-                {media.kind === "image" ? (
-                  <Image
-                    src={media.src}
-                    alt={media.alt}
-                    fill
-                    sizes="310px"
-                    unoptimized
-                    loading={index === 0 ? "eager" : "lazy"}
-                  />
-                ) : (
-                  <video
-                    src={media.src}
-                    poster={media.poster}
-                    controls
-                    playsInline
-                    preload="none"
-                    aria-label={title}
-                  >
-                    {media.captions && (
-                      <track kind="captions" src={media.captions} srcLang="ko" label="한국어" />
-                    )}
-                  </video>
-                )}
-              </div>
-              <div className="card-copy">
-                <strong>{title}</strong>
-                <p>{description}</p>
-              </div>
+          {memes.map((meme, index) => (
+            <li className="meme" key={meme.id} inert={active !== index}>
+              {meme.kind === "image" ? (
+                <>
+                  <div className="meme-media">
+                    <Image
+                      src={meme.src}
+                      alt={meme.alt}
+                      fill
+                      unoptimized
+                      draggable={false}
+                      loading={index === 0 ? "eager" : "lazy"}
+                    />
+                  </div>
+                  <div className="card-copy">
+                    <strong>{meme.title}</strong>
+                    {meme.description && <p>{meme.description}</p>}
+                  </div>
+                </>
+              ) : (
+                <YouTubeCard
+                  title={meme.title}
+                  videoId={meme.videoId}
+                  active={active === index}
+                  apiStatus={apiStatus}
+                  soundEnabled={soundEnabled}
+                />
+              )}
             </li>
           ))}
         </ul>
@@ -176,10 +166,10 @@ export function MemeGallery() {
       </div>
 
       <div className="dots" role="group" aria-label="보고 싶은 밈 선택">
-        {memes.map(({ media }, index) => (
+        {memes.map(({ id }, index) => (
           <button
             className="dot"
-            key={media.src}
+            key={id}
             type="button"
             aria-label={`${index + 1}번째 밈`}
             aria-current={active === index}

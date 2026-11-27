@@ -141,9 +141,12 @@ h1 {
 
 .gallery {
   --media-width: clamp(208px, 34svh, 310px);
-  --card-width: min(100%, var(--media-width));
+  --arrow-size: 44px;
+  --arrow-gap: clamp(4px, 1.3vw, 10px);
+  --card-width: min(var(--media-width), 100cqi - 2 * (var(--arrow-size) + var(--arrow-gap)));
+  container-type: inline-size;
   min-width: 0;
-  padding: 16px var(--gutter) 7px;
+  padding: 16px 6px 7px;
   background: #f4ecdc;
   border-block: 1px solid #ddd5c6;
 }
@@ -202,22 +205,21 @@ h2 {
   height: 14px;
 }
 
-.guide-arrows,
-.gallery-arrow {
-  display: none;
-}
-
 .gallery-stage {
   display: grid;
   justify-content: center;
-  align-items: center;
-  grid-template-columns: var(--card-width);
+  align-items: start;
+  grid-template-columns: var(--arrow-size) var(--card-width) var(--arrow-size);
+  column-gap: var(--arrow-gap);
 }
 
 .gallery-arrow {
+  display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: var(--arrow-size);
+  height: var(--arrow-size);
+  /* Center beside the 9:16 video above the card copy. */
+  margin-top: calc(1px + (var(--card-width) - 2px) * 8 / 9 - var(--arrow-size) / 2);
   padding: 0;
   background: var(--paper);
   color: var(--ink);
@@ -274,26 +276,25 @@ h2 {
   background: var(--ink);
 }
 
-.meme-media img,
-.meme-media video {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
 .meme-media img {
-  -webkit-user-drag: none;
+  object-fit: contain;
   user-select: none;
 }
 
-.meme-media video {
+.youtube-player {
   position: absolute;
   inset: 0;
 }
 
+.youtube-player iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
 .card-copy {
-  min-height: 65px;
+  min-height: 78px;
   padding: 9px 11px 11px;
   border-top: 1px solid var(--line);
 }
@@ -312,6 +313,32 @@ h2 {
   font-size: 12px;
   line-height: 1.4;
   letter-spacing: -.04em;
+}
+
+.video-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.video-actions button {
+  min-height: 32px;
+  padding: 2px 8px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.video-actions button:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
+.video-status a {
+  color: var(--ink);
 }
 
 .dots {
@@ -443,36 +470,16 @@ dialog button {
   }
 
   .gallery {
-    --card-width: min(100% - 100px, var(--media-width));
     grid-area: gallery;
     padding: 23px var(--gutter) 12px;
     border-block: 0;
     border-left: 1px solid #ddd5c6;
   }
 
-  .gallery-stage {
-    grid-template-columns: 40px var(--card-width) 40px;
-    gap: 10px;
-  }
-
-  .gallery-arrow {
-    display: grid;
-  }
-
   .actions {
     grid-area: actions;
     align-self: start;
     padding-top: 0;
-  }
-}
-
-@media (min-width: 780px) and (pointer: fine) {
-  .guide-swipe {
-    display: none;
-  }
-
-  .guide-arrows {
-    display: inline;
   }
 }
 
