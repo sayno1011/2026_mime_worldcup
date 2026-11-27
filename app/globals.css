@@ -281,6 +281,10 @@ h2 {
   user-select: none;
 }
 
+.meme-media[data-background="light"] {
+  background: white;
+}
+
 .youtube-player {
   position: absolute;
   inset: 0;
@@ -339,36 +343,6 @@ h2 {
 
 .video-status a {
   color: var(--ink);
-}
-
-.dots {
-  display: flex;
-  justify-content: center;
-  margin-top: 4px;
-}
-
-.dot {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  border-radius: 50%;
-}
-
-.dot::after {
-  content: "";
-  width: 6px;
-  height: 6px;
-  background: #938977;
-  border-radius: 8px;
-}
-
-.dot[aria-current="true"]::after {
-  width: 16px;
-  background: var(--ink);
 }
 
 .actions {

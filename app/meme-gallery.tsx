@@ -3,31 +3,9 @@
 import Image from "next/image";
 import Script from "next/script";
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
+import { memes } from "./memes";
 import { type YouTubeApiStatus, YouTubeCard } from "./youtube-card";
 
-type Meme = { id: string; title: string } & (
-  | { kind: "image"; src: string; alt: string; description?: string }
-  | { kind: "youtube"; videoId: string }
-);
-
-const memes: Meme[] = [
-  {
-    id: "why-teacher",
-    kind: "youtube",
-    title: "윤정아 윤정아 / 왜요쌤 왜요쌤",
-    videoId: "ZSCwu-raidg",
-  },
-  {
-    id: "side-eye-cat",
-    kind: "image",
-    title: "지금 그걸 말이라고",
-    description: "표정으로 이미 다 말했을 때",
-    src: "/memes/cat.jpg",
-    alt: "책상에서 옆눈으로 흘겨보는 고양이",
-  },
-  { id: "bomdong-bibimbap", kind: "youtube", title: "봄동 비빔밥", videoId: "ouScrWHUpoE" },
-  { id: "ganbare", kind: "youtube", title: "간바레 챌린지", videoId: "rKdsj4PAd-A" },
-];
 const hasVideos = memes.some(({ kind }) => kind === "youtube");
 
 export function MemeGallery() {
@@ -56,7 +34,7 @@ export function MemeGallery() {
     if (!track || !card) return;
 
     const offset = card.getBoundingClientRect().left - track.getBoundingClientRect().left;
-    track.scrollTo({ left: track.scrollLeft + offset + track.clientLeft });
+    track.scrollTo({ left: track.scrollLeft + offset - track.clientLeft });
   }
 
   function syncActive() {
@@ -125,7 +103,7 @@ export function MemeGallery() {
             <li className="meme" key={meme.id} inert={active !== index}>
               {meme.kind === "image" ? (
                 <>
-                  <div className="meme-media">
+                  <div className="meme-media" data-background={meme.background}>
                     <Image
                       src={meme.src}
                       alt={meme.alt}
@@ -137,17 +115,23 @@ export function MemeGallery() {
                   </div>
                   <div className="card-copy">
                     <strong>{meme.title}</strong>
-                    {meme.description && <p>{meme.description}</p>}
                   </div>
                 </>
-              ) : (
+              ) : Math.abs(index - active) <= 1 ? (
                 <YouTubeCard
                   title={meme.title}
-                  videoId={meme.videoId}
+                  videoId={meme.id}
                   active={active === index}
                   apiStatus={apiStatus}
                   soundEnabled={soundEnabled}
                 />
+              ) : (
+                <>
+                  <div className="meme-media" />
+                  <div className="card-copy">
+                    <strong>{meme.title}</strong>
+                  </div>
+                </>
               )}
             </li>
           ))}
@@ -163,20 +147,6 @@ export function MemeGallery() {
         >
           →
         </button>
-      </div>
-
-      <div className="dots" role="group" aria-label="보고 싶은 밈 선택">
-        {memes.map(({ id }, index) => (
-          <button
-            className="dot"
-            key={id}
-            type="button"
-            aria-label={`${index + 1}번째 밈`}
-            aria-current={active === index}
-            aria-controls="meme-cards"
-            onClick={() => showCard(index)}
-          />
-        ))}
       </div>
     </section>
   );

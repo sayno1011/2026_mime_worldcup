@@ -143,7 +143,7 @@ export function YouTubeCard({ title, videoId, active, apiStatus, soundEnabled }:
       observer.disconnect();
       activeRef.current = false;
       playbackAttempt.current = null;
-      player.pauseVideo();
+      if (media.isConnected) player.pauseVideo();
     };
   }, [active, player, soundEnabled, unavailable, videoId]);
 
